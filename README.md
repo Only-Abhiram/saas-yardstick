@@ -1,36 +1,76 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# SaaS Notes (Multi‑Tenant) — README
 
-## Getting Started
+## Overview
+Multi-tenant SaaS Notes app built with **Next.js** and **Prisma**. Supports tenant isolation, JWT auth, role-based access, and subscription plans. Deployed on **Vercel**.
 
-First, run the development server:
+## Multi-Tenancy Approach
+**Shared schema with tenantId column**. Simple, efficient for demo. All queries filtered by tenantId → strict isolation.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Models
+```prisma
+model Tenant { id String @id @default(cuid()) name String slug String @unique plan String @default("FREE") users User[] notes Note[] }
+model User   { id String @id @default(cuid()) email String @unique password String role String tenantId String tenant Tenant @relation(fields: [tenantId], references: [id]) notes Note[] }
+model Note   { id String @id @default(cuid()) title String content String createdAt DateTime @default(now()) userId String tenantId String user User @relation(fields: [userId], references: [id]) tenant Tenant @relation(fields: [tenantId], references: [id]) }
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Seeded Accounts
+All with password `password`:
+- `admin@acme.test` (Admin, Acme)
+- `user@acme.test` (Member, Acme)
+- `admin@globex.test` (Admin, Globex)
+- `user@globex.test` (Member, Globex)
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+## Auth
+- `POST /api/login` → returns JWT with `userId`, `role`, `tenantId`.
+-  token required for all protected routes.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Plans
+- **FREE**: max 3 notes per tenant.
+- **PRO**: unlimited.
+- Upgrade: `POST /api/tenants/:slug/upgrade` (Admin only).
+- Invite: `POST /api/tenants/:slug/invite` (Admin only).
 
-## Learn More
+## Notes API
+- `POST /api/notes` – Create note (checks plan limit).
+- `GET /api/notes` – List notes for tenant.
+- `GET /api/notes/:id` – Retrieve note.
+- `PUT /api/notes/:id` – Update note.
+- `DELETE /api/notes/:id` – Delete note.
 
-To learn more about Next.js, take a look at the following resources:
+## Roles
+- **Admin**: invite users, upgrade plan, full CRUD.
+- **Member**: CRUD only.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Health & CORS
+- `GET /api/health` → `{ "status": "ok" }`
+- CORS enabled for frontend & test scripts.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Frontend
+Minimal Next.js UI:
+- Login with seeded accounts.
+- List, create, delete, update notes.
+- Shows “Upgrade to Pro” when FREE limit reached (Log in with Admin account to upgrade).
+-Admin can add a new member and also can Upgrade Tenants Plan from Free to Pro
 
-## Deploy on Vercel
+## Deployment (Vercel)
+- Env vars: `DATABASE_URL`, `JWT_SECRET`, `JWT_EXPIRES_IN`.
+- Run Prisma migrations + seed tenants & users.
+- Deploy repo → backend & frontend live.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Tests Expected
+1. Health endpoint works.
+2. Login succeeds for all 4 accounts.
+3. Tenant isolation enforced.
+4. Role restrictions enforced.
+5. Free plan limit enforced, lifted after upgrade.
+6. CRUD works correctly.
+7. Frontend available and functional.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Links
+- GitHub: `https://github.com/<your-username>/<repo>`
+- Frontend: `https://<your-vercel-app>.vercel.app`
+- API: `https://<your-vercel-app>.vercel.app/api`
+
+---
+This satisfies all assignment requirements.
+

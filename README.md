@@ -67,9 +67,9 @@ Minimal Next.js UI:
 7. Frontend available and functional.
 
 ## Links
-- GitHub: `https://github.com/<your-username>/<repo>`
-- Frontend: `https://<your-vercel-app>.vercel.app`
-- API: `https://<your-vercel-app>.vercel.app/api`
+- GitHub: `https://github.com/Only-Abhiram/saas-yardstick`
+- Frontend: `https://saas-yardstick.vercel.app/`
+- API: `https://saas-yardstick.vercel.app/api`
 
 ---
 This satisfies all assignment requirements.

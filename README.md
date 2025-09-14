@@ -1,4 +1,4 @@
-# SaaS Notes (Multi‑Tenant) — README
+# SaaS Notes (Multi‑Tenant)
 
 ## Overview
 Multi-tenant SaaS Notes app built with **Next.js** and **Prisma**. Supports tenant isolation, JWT auth, role-based access, and subscription plans. Deployed on **Vercel**.
@@ -72,5 +72,4 @@ Minimal Next.js UI:
 - API: `https://saas-yardstick.vercel.app/api`
 
 ---
-This satisfies all assignment requirements.
 
